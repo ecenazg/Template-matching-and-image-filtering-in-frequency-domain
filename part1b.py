@@ -7,10 +7,11 @@ def correlationMeasure(P, T):
 
 def zeroMeanCorrelationMeasure(P, T):
     T_mean = np.mean(T)
-    return np.sum(P * (T - T_mean))
+    return np.sum((P - np.mean(P)) * (T - T_mean))
 
 def sumOfSquaredDifferenceMeasure(P, T):
-    return np.sum((P - T) ** 2)
+    val = np.sum((P - T) ** 2)
+    return val
 
 def normalizedCrossCorrelationMeasure(P, T):
     P_mean = np.mean(P)
@@ -25,10 +26,13 @@ def template_matching(input_image, template_image, measure_function):
     a = h // 2
     b = w // 2
     result_image = np.zeros((M, N))
+    input_image_norm = cv2.normalize(input_image.astype('float'), None, 0, 1, cv2.NORM_MINMAX)
+    template_image_norm = cv2.normalize(template_image.astype('float'), None, 0, 1, cv2.NORM_MINMAX)
     for x in range(a, M - a):
         for y in range(b, N - b):
-            patch = input_image[x - a:x + a + 1, y - b:y + b + 1]
-            result_image[x, y] = measure_function(patch, template_image)
+            patch = input_image_norm[x - a:x + a + 1, y - b:y + b + 1]
+            result_image[x, y] = measure_function(patch, template_image_norm)
+    result_image = cv2.normalize(result_image, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
     return result_image
 
 input_image = cv2.imread(r"C:\Users\ecena\OneDrive\Belgeler\Template matching and image filtering in frequency domain\input2.png", cv2.IMREAD_GRAYSCALE)
@@ -39,19 +43,14 @@ template_image = cv2.imread(r"C:\Users\ecena\OneDrive\Belgeler\Template matching
 correlation_result = template_matching(input_image, template_image, correlationMeasure)
 zero_mean_result = template_matching(input_image, template_image, zeroMeanCorrelationMeasure)
 squared_difference_result = template_matching(input_image, template_image, sumOfSquaredDifferenceMeasure)
-normalized_cross_correlation_result = template_matching(input_image, template_image, normalizedCrossCorrelationMeasure)
+normalized_cross_correlation_result = cv2.matchTemplate(input_image, template_image, cv2.TM_CCORR_NORMED)
 
-# Convert the result images to unsigned 8-bit integers
-correlation_result = cv2.normalize(correlation_result, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-zero_mean_result = cv2.normalize(zero_mean_result, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-squared_difference_result = cv2.normalize(squared_difference_result, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
-normalized_cross_correlation_result = cv2.normalize(normalized_cross_correlation_result, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
 
 # Create a subplot with spacing between images
 fig, axs = plt.subplots(2, 2, figsize=(10, 10))
 fig.tight_layout(pad=5.0)
 
-# Display the resulting images using matplotlib
+
 axs[0, 0].imshow(correlation_result, cmap='jet')
 axs[0, 0].set_title('Correlation')
 
@@ -65,6 +64,7 @@ axs[1, 1].imshow(normalized_cross_correlation_result, cmap='jet')
 axs[1, 1].set_title('Normalized Cross Correlation')
 
 plt.show()
+
 
 
 # Perform template matching with correlation similarity measure
