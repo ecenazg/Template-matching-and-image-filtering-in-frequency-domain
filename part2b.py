@@ -52,7 +52,7 @@ for n in n_values:
 
         plt.subplot(131)
         plt.imshow(H_magnitude, cmap='gray')
-        plt.title(f'Filter H (n={n}, D0={D0})')
+        plt.title(f'High Pass Filter(n={n}, D0={D0})')
 
         plt.subplot(132)
         plt.imshow(np.log(1 + H_magnitude), cmap='gray')

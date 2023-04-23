@@ -21,13 +21,8 @@ def butterworthLowpassFilter(img, D0, n):
     
     return filtered
 
-def butterworthHighpassFilter(img, D0, n):
-    lowpass_filtered = butterworthLowpassFilter(img, D0, n)
-    highpass_filtered = img - lowpass_filtered
-    
-    return highpass_filtered
-
 img = cv2.imread(r"C:\Users\ecena\OneDrive\Belgeler\Template matching and image filtering in frequency domain\Lenna.png", cv2.IMREAD_GRAYSCALE)
+
 plt.imshow(img, cmap='gray')
 plt.title('Original Image')
 plt.show()
@@ -52,14 +47,14 @@ for n in n_values:
 
         plt.subplot(131)
         plt.imshow(H_magnitude, cmap='gray')
-        plt.title(f'Filter H (n={n}, D0={D0})')
+        plt.title(f'Low Pass Filter (n={n}, D0={D0})')
 
         plt.subplot(132)
         plt.imshow(np.log(1 + H_magnitude), cmap='gray')
-        plt.title(f'Filtered (Freq. Domain) (n={n}, D0={D0})')
+        plt.title(f'Filtering Result(Frequency) (n={n}, D0={D0})')
 
         plt.subplot(133)
         plt.imshow(filtered, cmap='gray')
-        plt.title(f'Filtered (Spatial Domain) (n={n}, D0={D0})')
+        plt.title(f'Filtering Result(Spatial) (n={n}, D0={D0})')
 
         plt.show()
