@@ -46,11 +46,11 @@ for n in n_values:
         plt.figure(figsize=(12, 4))
 
         plt.subplot(131)
-        plt.imshow(H_magnitude, cmap='gray')
+        plt.imshow(H_magnitude, cmap='jet')
         plt.title(f'Low Pass Filter (n={n}, D0={D0})')
 
         plt.subplot(132)
-        plt.imshow(np.log(1 + H_magnitude), cmap='gray')
+        plt.imshow(np.log(1 + H_magnitude), cmap='jet')
         plt.title(f'Filtering Result(Frequency) (n={n}, D0={D0})')
 
         plt.subplot(133)

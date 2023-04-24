@@ -1,65 +1,55 @@
-import numpy as np
 import cv2
-from matplotlib import pyplot as plt
-
-def butterworthLowpassFilter(img, D0, n):
-    h, w = img.shape
-    
-    # Shift the image to the center
-    img_shifted = np.fft.fftshift(np.fft.fft2(img))
-    
-    # Create an empty filter
-    H = np.zeros((h, w))
-    
-    for u in range(h):
-        for v in range(w):
-            D = np.sqrt((u - h//2)**2 + (v - w//2)**2)
-            H[u, v] = 1 / (1 + (D / D0)**(2 * n))
-    
-    filtered_shifted = H * img_shifted
-    filtered = np.abs(np.fft.ifft2(np.fft.ifftshift(filtered_shifted)))
-    
-    return filtered
+import numpy as np
+import matplotlib.pyplot as plt
 
 def butterworthHighpassFilter(img, D0, n):
-    lowpass_filtered = butterworthLowpassFilter(img, D0, n)
-    highpass_filtered = img - lowpass_filtered
+    # Compute the Fourier transform and shift it to the center
+    img_fft = np.fft.fft2(img)
+    img_fft_shift = np.fft.fftshift(img_fft)
+
+    # Construct the Butterworth lowpass filter
+    rows, cols = img.shape
+    center = (rows/2, cols/2)
+    H_lowpass = np.zeros(img.shape, dtype=np.float32)
+    for i in range(rows):
+        for j in range(cols):
+            dist = np.sqrt((i - center[0])**2 + (j - center[1])**2)
+            H_lowpass[i,j] = 1 / (1 + (dist/D0)**(2*n))
+
+    # Apply the lowpass filter in the frequency domain
+    img_fft_shift_lowpass = img_fft_shift * H_lowpass
+    img_lowpass = np.fft.ifft2(np.fft.ifftshift(img_fft_shift_lowpass)).real
+
+    # Construct the Butterworth highpass filter
+    H_highpass = 1 - H_lowpass
+
+    # Apply the highpass filter in the frequency domain
+    img_fft_shift_highpass = img_fft_shift * H_highpass
+    img_highpass = np.fft.ifft2(np.fft.ifftshift(img_fft_shift_highpass)).real
     
-    return highpass_filtered
+    # Show the results
+    fig, ax = plt.subplots(2, 2, figsize=(15,15))
+    ax[0, 0].imshow(np.log(1 + np.abs(img_fft_shift)), cmap='gray')
+    ax[0, 0].set_title('Fourier Transform Magnitude')
+
+    ax[0, 1].imshow(H_highpass, cmap='gray')
+    ax[0, 1].set_title('Highpass Filter')
+
+    ax[1, 0].imshow(np.log(1 + np.abs(img_fft_shift_highpass)), cmap='gray')
+    ax[1, 0].set_title('Highpass Filtering Result (Frequency)')
+
+    ax[1, 1].imshow(img_highpass, cmap='gray')
+    ax[1, 1].set_title('Highpass Filtered Image (Spatial)')
+
+    plt.show()
+
+    return img_highpass
 
 img = cv2.imread(r"C:\Users\ecena\OneDrive\Belgeler\Template matching and image filtering in frequency domain\Lenna.png", cv2.IMREAD_GRAYSCALE)
 plt.imshow(img, cmap='gray')
-plt.title('Original Image')
-plt.show()
+plt.title("Original Image")
+butterworthHighpassFilter(img, 25, 2)
+butterworthHighpassFilter(img, 60, 10)
+butterworthHighpassFilter(img, 25, 10)
+butterworthHighpassFilter(img, 60, 2)
 
-F = np.fft.fft2(img)
-F_magnitude = np.abs(np.fft.fftshift(F))
-plt.imshow(np.log(1 + F_magnitude), cmap='gray')
-plt.title('Fourier Transform Magnitude')
-plt.show()
-
-
-n_values = [2, 10]
-D0_values = [20, 100]
-
-for n in n_values:
-    for D0 in D0_values:
-        filtered = butterworthHighpassFilter(img, D0, n)
-        filtered_shifted = np.fft.fftshift(np.fft.fft2(filtered))
-        H_magnitude = np.abs(filtered_shifted)
-
-        plt.figure(figsize=(12, 4))
-
-        plt.subplot(131)
-        plt.imshow(H_magnitude, cmap='gray')
-        plt.title(f'High Pass Filter(n={n}, D0={D0})')
-
-        plt.subplot(132)
-        plt.imshow(np.log(1 + H_magnitude), cmap='gray')
-        plt.title(f'Filtered (Freq. Domain) (n={n}, D0={D0})')
-
-        plt.subplot(133)
-        plt.imshow(filtered, cmap='gray')
-        plt.title(f'Filtered (Spatial Domain) (n={n}, D0={D0})')
-
-        plt.show()
