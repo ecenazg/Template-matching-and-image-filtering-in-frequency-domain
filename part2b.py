@@ -48,6 +48,7 @@ def butterworthHighpassFilter(img, D0, n):
 img = cv2.imread(r"C:\Users\ecena\OneDrive\Belgeler\Template matching and image filtering in frequency domain\Lenna.png", cv2.IMREAD_GRAYSCALE)
 plt.imshow(img, cmap='gray')
 plt.title("Original Image")
+
 butterworthHighpassFilter(img, 25, 2)
 butterworthHighpassFilter(img, 60, 10)
 butterworthHighpassFilter(img, 25, 10)
